@@ -73,7 +73,7 @@ public class MovieDetailActivity extends AppCompatActivity {
                         .build();
 
                 //Setting everything within the xml file
-                ((TextView) rootView.findViewById(R.id.detail_movieTitle)).setText("Title: " + receivedMovie.getTitle());
+                ((TextView) rootView.findViewById(R.id.detail_movieTitle)).setText(receivedMovie.getTitle());
                 Picasso.with(getActivity()).load(uri).into((ImageView)rootView.findViewById(R.id.detail_moviePoster));
                 ((TextView) rootView.findViewById(R.id.detail_overview)).setText("Overview: " + receivedMovie.getOverview());
                 ((TextView) rootView.findViewById(R.id.detail_rating)).setText("Rating: " + (receivedMovie.getRating()).toString());
