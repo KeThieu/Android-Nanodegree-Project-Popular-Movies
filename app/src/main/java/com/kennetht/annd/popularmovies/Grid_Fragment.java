@@ -149,9 +149,14 @@ public class Grid_Fragment extends Fragment {
                 SORT_QUERY_TYPE = "vote_average.desc";
             }
 
-
-            //Hid the API_Key within the gradle module on my PC instead of project.
-            //Hopefully doesn't get uploaded to github
+            /*
+            *   To the Udacity Reviewer. When you use your own API Key for reviewing my code
+            *   replace the following line within the Uri building process
+            *   .appendQueryParameter(API_KEY, BuildConfig.MOVIE_DB_API_KEY)
+            *   with
+            *   .appendQueryParameter(API_KEY, "YOUR API KEY HERE")
+            *
+             */
             Uri uri = Uri.parse(authorityStr)
                     .buildUpon()
                     .appendQueryParameter(SORT_QUERY, SORT_QUERY_TYPE)
