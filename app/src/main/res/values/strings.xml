@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">PopularMovies</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_movie_detail">MovieDetailActivity</string>
+
+    <string name="default_overview">No Overview given</string>
+    <string name="default_movieTitle">No Movie Title given</string>
+    <string name="default_rating">No rating given</string>
+    <string name="default_releaseDate">No release Date given</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <string name="sortByKey" translatable="false">sortUnits</string>
+    <string name="sortByTitle" translatable="false">Sort By</string>
+    <string name="popularity_desc" translatable="false">popularity_desc</string>
+    <string name="vote_avg_desc" translatable="false">vote_average_desc</string>
+    <string-array name="Sort_Types">
+        <item>Popularity Descending</item>
+        <item>User Rating Descending</item>
+    </string-array>
+    <string-array name="Sort_Values">
+        <item>@string/popularity_desc</item>
+        <item>@string/vote_avg_desc</item>
+    </string-array>
+
+
+</resources>
