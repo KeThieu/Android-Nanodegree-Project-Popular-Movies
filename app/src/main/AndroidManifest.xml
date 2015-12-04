@@ -30,6 +30,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.kennetht.annd.popularmovies.MainActivity" />
         </activity>
+        <provider android:name = ".Data.generated.MovieProvider"
+            android:authorities = "com.kennetht.annd.popularmovies"
+            android:enabled="true"
+            android:exported="true"/>
     </application>
 
 </manifest>

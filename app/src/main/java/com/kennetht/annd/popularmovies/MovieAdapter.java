@@ -54,4 +54,8 @@ public class MovieAdapter extends ArrayAdapter<MovieObject> {
         Picasso.with(this.context).load(uri.toString()).into(view);
         return view;
     }
+
+    public List<MovieObject> getMovieList() {
+        return data;
+    }
 }

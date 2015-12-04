@@ -2,6 +2,7 @@ package com.kennetht.annd.popularmovies;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Movie;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 public class Grid_Fragment extends Fragment {
 
     private MovieAdapter globalMovies;
+    private ArrayList<MovieObject> globalMoviesList;
 
     public Grid_Fragment() {
     }
@@ -45,7 +47,6 @@ public class Grid_Fragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-
         updateMovies();
     }
 
@@ -54,6 +55,10 @@ public class Grid_Fragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+        globalMoviesList = new ArrayList<MovieObject>();
+        if(savedInstanceState != null) {
+            globalMoviesList = savedInstanceState.getParcelableArrayList("key");
+        }
     }
 
     @Override
@@ -73,12 +78,21 @@ public class Grid_Fragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        globalMovies = new MovieAdapter(
-                getActivity(),
-                R.layout.image_movie,
-                R.id.movie_imageview,
-                new ArrayList<MovieObject>()
-        );
+        if(globalMoviesList.size() > 0) {
+            globalMovies = new MovieAdapter(
+                    getActivity(),
+                    R.layout.image_movie,
+                    R.id.movie_imageview,
+                    globalMoviesList
+            );
+        } else {
+            globalMovies = new MovieAdapter(
+                    getActivity(),
+                    R.layout.image_movie,
+                    R.id.movie_imageview,
+                    new ArrayList<MovieObject>()
+            );
+        }
 
         GridView grid = (GridView)rootView.findViewById(R.id.grid_movies);
         grid.setAdapter(globalMovies);
@@ -96,12 +110,16 @@ public class Grid_Fragment extends Fragment {
         return rootView;
     }
 
-
+    @Override
+    public void onSaveInstanceState(Bundle out) {
+        out.putParcelableArrayList("key", globalMoviesList);
+        super.onSaveInstanceState(out);
+    }
 /*
 *   Following is the background task for getting data from the network
 *
 */
-    public class FetchMovieData extends AsyncTask<String, Void, ArrayList<MovieObject>> {
+    public class FetchMovieData extends AsyncTask<String, Void, CompleteMovieContainer> {
         private final String LOG_TAG = FetchMovieData.class.getSimpleName();
 
         public ArrayList<MovieObject> parseMovieJSON(String dataJSON) throws JSONException {
@@ -115,6 +133,8 @@ public class Grid_Fragment extends Fragment {
                     MovieObject movieObj = new MovieObject(
                             //Title
                             obj.getString("original_title"),
+                            //MovieID
+                            obj.getString("id"),
                             //Poster_path
                             obj.getString("poster_path"),
                             //Overview
@@ -125,46 +145,60 @@ public class Grid_Fragment extends Fragment {
                             obj.getString("release_date")
                     );
                     MovieList.add(movieObj);
-                   /* Log.v(LOG_TAG, "Title: " + movieObj.getTitle() + "\nPoster Path: " + movieObj.getPoster() +
-                            "\nOverview: " + movieObj.getOverview() + "\nRating: " + movieObj.getRating() +
-                            "\nReleaseDate: " + movieObj.getRelease());
-                   */
                 }
             }
            // Log.v(LOG_TAG,"Size of MovieList: " + MovieList.size());
             return MovieList;
         }
 
-        public ArrayList<MovieObject> doInBackground(String... params) {
-            String authorityStr = "http://api.themoviedb.org/3/discover/movie";
-            final String SORT_QUERY = "sort_by";
-            String SORT_QUERY_TYPE = null;
-            final String API_KEY = "api_key";
+        public ArrayList<MovieTrailers> parseTrailerData(String dataJSON,
+                       String movieID, ArrayList<MovieTrailers> mT) throws JSONException {
 
-            //After implementing settings, change the sort query type when needed
-            //default is popularity.desc
-            SORT_QUERY_TYPE = "popularity.desc";
+            if( dataJSON != null && movieID != null) {
 
-            if (params[0] == getString(R.string.vote_avg_desc)) {
-                SORT_QUERY_TYPE = "vote_average.desc";
+                JSONObject initial = new JSONObject(dataJSON);
+                JSONArray results = initial.getJSONArray("results");
+                for(int i = 0; i < results.length(); i++) {
+                    JSONObject obj = results.getJSONObject(i);
+                    final String video_ID = obj.getString("id");
+                    final String video_KEY = obj.getString("key");
+                    final String video_NAME = obj.getString("name");
+
+                    MovieTrailers m = new MovieTrailers(movieID, video_KEY,video_NAME);
+                    mT.add(m);
+                }
+
+                return mT;
+            }
+            return null;
+        }
+
+    public ArrayList<MovieReviews> parseReviewData(String dataJSON,
+                   String movieID, ArrayList<MovieReviews> mR) throws JSONException {
+
+        if( dataJSON != null && movieID != null) {
+
+            JSONObject initial = new JSONObject(dataJSON);
+            JSONArray results = initial.getJSONArray("results");
+            for(int i = 0; i < results.length(); i++) {
+                JSONObject obj = results.getJSONObject(i);
+                final String review_ID = obj.getString("id");
+                final String review_CONTENT = obj.getString("content");
+                final String review_AUTHOR = obj.getString("author");
+
+                MovieReviews m = new MovieReviews(movieID, review_AUTHOR, review_CONTENT);
+                mR.add(m);
             }
 
-            /*
-            *   To the Udacity Reviewer. When you use your own API Key for reviewing my code
-            *   replace the following line within the Uri building process
-            *   .appendQueryParameter(API_KEY, BuildConfig.MOVIE_DB_API_KEY)
-            *   with
-            *   .appendQueryParameter(API_KEY, "YOUR API KEY HERE")
-            *
-             */
-            Uri uri = Uri.parse(authorityStr)
-                    .buildUpon()
-                    .appendQueryParameter(SORT_QUERY, SORT_QUERY_TYPE)
-                    .appendQueryParameter(API_KEY, BuildConfig.MOVIE_DB_API_KEY)
-                    .build();
+            return mR;
+        }
+        return null;
+    }
 
-           // Log.v(LOG_TAG, uri.toString());
-
+        /*
+        *   universal method of getting json data from a given uri
+        */
+        public String makingConnection(Uri uri) {
             HttpURLConnection connection = null;
             BufferedReader reader = null;
             try {
@@ -186,19 +220,15 @@ public class Grid_Fragment extends Fragment {
                 if(buffer.length() == 0) return null;
 
                 String movieJSON = buffer.toString();
-            //    Log.v(LOG_TAG, movieJSON);
+                //Log.v(LOG_TAG, movieJSON);
 
-                try {
-                    return parseMovieJSON(movieJSON);
+                return movieJSON;
 
-                } catch (JSONException e) {
-                    Log.e(LOG_TAG, "Cannot parse JSON");
-                }
+            } catch(IOException e) {
+                Log.e(LOG_TAG, "Invalid URL at uri = " + uri.toString());
 
-            }catch(IOException e) {
-                Log.e(LOG_TAG, "Invalid URL");
             } finally {
-                if(connection != null) {
+                if (connection != null) {
                     connection.disconnect();
                 }
                 if (reader != null) {
@@ -209,20 +239,155 @@ public class Grid_Fragment extends Fragment {
                     }
                 }
             }
-
             return null;
         }
 
-        @Override
-        protected void onPostExecute(ArrayList<MovieObject> movies) {
-            if(movies != null) {
-                globalMovies.clear();
-                if (movies.size() > 0) {
-                    for(int i = 0; i < movies.size(); i++) {
-                       globalMovies.add(movies.get(i));
-                    }
+
+        public ArrayList<MovieObject> discoverMovies(String sortType) {
+            String authorityStr = "http://api.themoviedb.org/3/discover/movie";
+            final String SORT_QUERY = "sort_by";
+            String SORT_QUERY_TYPE = null;
+            final String API_KEY = "api_key";
+            //After implementing settings, change the sort query type when needed
+            //default is popularity.desc
+            SORT_QUERY_TYPE = "popularity.desc";
+            if (sortType == getString(R.string.vote_avg_desc)) {
+                SORT_QUERY_TYPE = "vote_average.desc";
+            }
+             /*
+              *   To the Udacity Reviewer. When you use your own API Key for reviewing my code
+              *   replace the following line within the Uri building process
+              *   .appendQueryParameter(API_KEY, BuildConfig.MOVIE_DB_API_KEY)
+              *   with
+              *   .appendQueryParameter(API_KEY, "YOUR API KEY HERE")
+              *
+              */
+            Uri uri = Uri.parse(authorityStr)
+                    .buildUpon()
+                    .appendQueryParameter(SORT_QUERY, SORT_QUERY_TYPE)
+                    .appendQueryParameter(API_KEY, BuildConfig.MOVIE_DB_API_KEY)
+                    .build();
+              Log.v(LOG_TAG, "Initial Movie Fetch =" + uri.toString());
+            String movieJSON = makingConnection(uri);
+            if(movieJSON != null) {
+                try {
+                    return parseMovieJSON(movieJSON);
+                } catch (JSONException e) {
                 }
             }
+            return null;
+        }
+
+        public ArrayList<MovieTrailers> insertTrailerDatabase(ArrayList<MovieObject> data) throws JSONException {
+
+            String authorityString = "http://api.themoviedb.org/3/movie";
+            String movieID = null;
+            final String VIDEOS = "videos";
+            final String API_KEY = "api_key";
+
+            if (data != null) {
+
+                ArrayList<MovieTrailers> mT = new ArrayList<>();
+                for(int i = 0; i < data.size(); i++) {
+                    movieID = data.get(i).getMovieID();
+
+                    Uri fetchTrailerUri = Uri.parse(authorityString).buildUpon()
+                            .appendPath(movieID)
+                            .appendPath(VIDEOS)
+                            .appendQueryParameter(API_KEY, BuildConfig.MOVIE_DB_API_KEY)
+                            .build();
+
+                    Log.v("TRAILER URI", fetchTrailerUri.toString());
+
+                    String movieJSON = makingConnection(fetchTrailerUri);
+                    mT = parseTrailerData(movieJSON, movieID, mT);
+                }
+
+                return mT;
+            }
+            return null;
+        }
+
+        public ArrayList<MovieReviews> insertReviewDatabase(ArrayList<MovieObject> data) throws JSONException {
+
+            String authorityString = "http://api.themoviedb.org/3/movie";
+            String movieID = null;
+            final String REVIEWS = "reviews";
+            final String API_KEY = "api_key";
+
+            if (data != null) {
+
+                ArrayList<MovieReviews> mR = new ArrayList<>();
+                for(int i = 0; i < data.size(); i++) {
+                    movieID = data.get(i).getMovieID();
+
+                    Uri fetchReviewUri = Uri.parse(authorityString).buildUpon()
+                            .appendPath(movieID)
+                            .appendPath(REVIEWS)
+                            .appendQueryParameter(API_KEY, BuildConfig.MOVIE_DB_API_KEY)
+                            .build();
+
+                    Log.v("REVIEW URI", fetchReviewUri.toString());
+
+                    String movieJSON = makingConnection(fetchReviewUri);
+                    mR = parseReviewData(movieJSON, movieID, mR);
+                }
+
+                return mR;
+            }
+            return null;
+        }
+
+        public CompleteMovieContainer doInBackground(String... params) {
+            ArrayList<MovieObject> discoveredMovies = discoverMovies(params[0]);
+            ArrayList<MovieTrailers> mTrailers = new ArrayList<MovieTrailers>();
+            ArrayList<MovieReviews> mReviews = new ArrayList<MovieReviews>();
+            if(discoveredMovies != null) {
+                try {
+                    mTrailers = insertTrailerDatabase(discoveredMovies);
+                    mReviews = insertReviewDatabase(discoveredMovies);
+                } catch (JSONException e) {
+
+                }
+
+                CompleteMovieContainer CMC = new CompleteMovieContainer(discoveredMovies, mTrailers, mReviews);
+
+                return CMC;
+            }
+                return null;
+        }
+
+        @Override
+        protected void onPostExecute(CompleteMovieContainer CMC) {
+
+            if(CMC != null) {
+                globalMovies.clear();
+
+                ArrayList<MovieObject> m = CMC.getMovies();
+                ArrayList<MovieTrailers> mT = CMC.getMovieTrailers();
+               // ArrayList<MovieReviews> mR = CMC.getMovieReviews();
+
+                if(m.size() > 0) {
+                    for(int i = 0; i < m.size(); i++) {
+                        globalMovies.add(m.get(i));
+                    }
+
+                    globalMoviesList = (ArrayList<MovieObject>) globalMovies.getMovieList();
+                }
+            }
+            /*
+            if(movies != null) {
+                globalMovies.clear();
+                globalMoviesList.clear();
+                if (movies.size() > 0) {
+                    for(int i = 0; i < movies.size(); i++) {
+                        globalMovies.add(movies.get(i));
+                    }
+                }
+                globalMoviesList = (ArrayList<MovieObject>) globalMovies.getMovieList();
+
+            }
+            */
             //Log.v(LOG_TAG, "GlobalMovies ArrayList size is now: " + globalMovies.size());
         }
     }
