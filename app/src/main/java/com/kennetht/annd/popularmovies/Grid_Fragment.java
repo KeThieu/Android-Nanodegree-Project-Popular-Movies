@@ -49,10 +49,13 @@ public class Grid_Fragment extends Fragment implements FetchMovieData.callbackMo
     private GridView grid;
     private static int mPosition = GridView.INVALID_POSITION;
 
+
+    private CallbackMain mCallback;
+
     public Grid_Fragment() {
     }
 
-    private void updateMovies() {
+    public void updateMovies() {
 
         String sortUnit = getSortType();
         if(!sortUnit.equals(getString(R.string.favorites))) {
@@ -112,9 +115,20 @@ public class Grid_Fragment extends Fragment implements FetchMovieData.callbackMo
                 public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                     mPosition = position;
                     MovieObject movieObject = (MovieObject) adapterView.getItemAtPosition(position);
+                    /*
                     Intent intent = new Intent(getActivity(), MovieDetailActivity.class);
                     intent.putExtra("MovieObject", movieObject);
                     startActivity(intent);
+                    */
+                    try {
+                        mCallback = (CallbackMain) getActivity();
+                    } catch (ClassCastException e) {
+                        throw new ClassCastException(getActivity().toString() + " must implement CallbackMain interface");
+                    }
+
+                    if(mCallback != null) {
+                        mCallback.onMovieSelect(movieObject);
+                    }
                 }
             });
 
@@ -153,10 +167,9 @@ public class Grid_Fragment extends Fragment implements FetchMovieData.callbackMo
     */
     public void insertFavGlobalMovieList() {
         Cursor cursor = getActivity().getContentResolver().query(MovieProvider.Favorites.CONTENT_URI, null, null, null, null);
+        globalMovies.clear();
         if(cursor.getCount() > 0) {
             //begin inserting into globalMovie
-            globalMovies.clear();
-
             cursor.moveToFirst();
             do {
                 MovieObject movieObject = new MovieObject(
@@ -183,6 +196,10 @@ public class Grid_Fragment extends Fragment implements FetchMovieData.callbackMo
 
             globalMoviesList = (ArrayList) globalMovies.getMovieList();
         }
+    }
+
+    public interface CallbackMain {
+        void onMovieSelect(MovieObject m);
     }
 
 }

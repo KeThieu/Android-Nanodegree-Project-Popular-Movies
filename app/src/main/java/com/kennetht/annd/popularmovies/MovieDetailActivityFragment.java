@@ -30,6 +30,10 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
 
     private final String LOG_TAG = MovieDetailActivityFragment.class.getSimpleName();
 
+    static final String ARG_MOVIE_TAG = "MOVIEOBJECT";
+
+    private static MovieObject mMovieObject;
+
     private ViewGroup layoutContainer;
 
     public MovieDetailActivityFragment() {
@@ -46,12 +50,15 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
         layoutContainer = container;
 
-        Intent receivedIntent = getActivity().getIntent();
-        if (receivedIntent != null && receivedIntent.hasExtra("MovieObject")) {
-            final MovieObject receivedMovie = receivedIntent.getExtras().getParcelable("MovieObject");
+        Bundle bundle = this.getArguments();
+        if(bundle != null) {
+            mMovieObject = bundle.getParcelable(ARG_MOVIE_TAG);
+        }
+
+        if (mMovieObject != null) {
 
             //Reuse the same URI code for the poster path as MovieAdapter
-            String posterPath = receivedMovie.getPoster();
+            String posterPath = mMovieObject.getPoster();
             final String baseURL = "http://image.tmdb.org/t/p/w185";
 
             Uri uri = Uri.parse(baseURL)
@@ -60,14 +67,14 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
                     .build();
 
             //Setting everything within the xml file
-            ((TextView) rootView.findViewById(R.id.detail_movieTitle)).setText(receivedMovie.getTitle());
+            ((TextView) rootView.findViewById(R.id.detail_movieTitle)).setText(mMovieObject.getTitle());
             Picasso.with(getActivity()).load(uri).into((ImageView) rootView.findViewById(R.id.detail_moviePoster));
-            ((TextView) rootView.findViewById(R.id.detail_overview)).setText(receivedMovie.getOverview());
-            ((TextView) rootView.findViewById(R.id.detail_rating)).setText((receivedMovie.getRating()).toString() + " / 10");
-            ((TextView) rootView.findViewById(R.id.detail_releaseDate)).setText(receivedMovie.getRelease());
+            ((TextView) rootView.findViewById(R.id.detail_overview)).setText(mMovieObject.getOverview());
+            ((TextView) rootView.findViewById(R.id.detail_rating)).setText((mMovieObject.getRating()).toString() + " / 10");
+            ((TextView) rootView.findViewById(R.id.detail_releaseDate)).setText(mMovieObject.getRelease());
 
             final Button favorite_button = (Button) rootView.findViewById(R.id.detail_favorite_button);
-            final String movieID = receivedMovie.getMovieID();
+            final String movieID = mMovieObject.getMovieID();
 
             //Check if this movie is in the Content Provider
             if(queryFavoriteDatabase(movieID)) {
@@ -86,30 +93,29 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
                                         new String[] {movieID});
 
                         if(deleted > 0) {
-                            Log.v(LOG_TAG, "Number of rows deleted: " + deleted);
+                           // Log.v(LOG_TAG, "Number of rows deleted: " + deleted);
                             favorite_button.setText("Add to Favorites");
-                            if(!queryFavoriteDatabase(movieID)) {
-                                Log.v(LOG_TAG, movieID + " is longer in the database");
-                            }
+                            updateGrid();
                         }
 
                     } else {
                         //add into the database
                         ContentValues contentValues = new ContentValues();
                         contentValues.put(FavoritesColumns.MOVIE_ID, movieID);
-                        contentValues.put(FavoritesColumns.MOVIE_TITLE, receivedMovie.getTitle());
-                        contentValues.put(FavoritesColumns.OVERVIEW, receivedMovie.getOverview());
-                        contentValues.put(FavoritesColumns.POSTER_PATH, receivedMovie.getPoster());
-                        contentValues.put(FavoritesColumns.RELEASE_DATE, receivedMovie.getRelease());
-                        contentValues.put(FavoritesColumns.USER_RATING, receivedMovie.getRating());
+                        contentValues.put(FavoritesColumns.MOVIE_TITLE, mMovieObject.getTitle());
+                        contentValues.put(FavoritesColumns.OVERVIEW, mMovieObject.getOverview());
+                        contentValues.put(FavoritesColumns.POSTER_PATH, mMovieObject.getPoster());
+                        contentValues.put(FavoritesColumns.RELEASE_DATE, mMovieObject.getRelease());
+                        contentValues.put(FavoritesColumns.USER_RATING, mMovieObject.getRating());
 
                         Uri insertURI = getActivity().getContentResolver()
                                 .insert(MovieProvider.Favorites.CONTENT_URI,
                                         contentValues);
 
                         if(!insertURI.equals(Uri.EMPTY)) {
-                            Log.v(LOG_TAG, "Successful insert at URI: " + insertURI.toString());
+                           // Log.v(LOG_TAG, "Successful insert at URI: " + insertURI.toString());
                             favorite_button.setText("Remove from Favorites");
+                            updateGrid();
                         } else {
                             throw new android.database.SQLException("Failure to insert into uri: " + insertURI);
                         }
@@ -130,7 +136,7 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
 
     public boolean queryFavoriteDatabase(String movieID) {
         Cursor cursor = getActivity().getContentResolver()
-                .query(MovieProvider.Favorites.CONTENT_URI, new String[] {FavoritesColumns.MOVIE_ID}, null, null, null);
+                .query(MovieProvider.Favorites.CONTENT_URI, new String[]{FavoritesColumns.MOVIE_ID}, null, null, null);
         if(cursor.moveToFirst()) {
             String curMovieID = cursor.getString(cursor.getColumnIndex(FavoritesColumns.MOVIE_ID));
             if (movieID.equals(curMovieID)) {
@@ -194,6 +200,14 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
             return true;
         }
         return false;
+    }
+
+    public void updateGrid() {
+        Grid_Fragment gf = (Grid_Fragment) getActivity().getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_grid);
+        if(gf != null) {
+            gf.updateMovies();
+        }
     }
 
     public void launchYoutubeIntent(String video_key) {

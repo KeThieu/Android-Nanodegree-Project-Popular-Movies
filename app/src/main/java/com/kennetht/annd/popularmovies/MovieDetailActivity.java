@@ -34,17 +34,22 @@ import java.util.ArrayList;
 
 public class MovieDetailActivity extends AppCompatActivity {
 
-    private ArrayList<MovieTrailers> gTrailers;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
 
-        gTrailers = new ArrayList<MovieTrailers>();
         if(savedInstanceState == null) {
+
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(MovieDetailActivityFragment.ARG_MOVIE_TAG,
+                    getIntent().getExtras().getParcelable(MovieDetailActivityFragment.ARG_MOVIE_TAG));
+
+            MovieDetailActivityFragment mf = new MovieDetailActivityFragment();
+            mf.setArguments(bundle);
+
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new MovieDetailActivityFragment())
+                    .add(R.id.movie_detail_container, mf)
                     .commit();
         }
     }
