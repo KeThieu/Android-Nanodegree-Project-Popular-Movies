@@ -7,8 +7,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.LogWriter;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -36,7 +41,32 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
 
     private ViewGroup layoutContainer;
 
+    private String mYTUri;
+    private ShareActionProvider mShareActionProvider;
+
     public MovieDetailActivityFragment() {
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.menu_movie_detail_fragment, menu);
+        MenuItem menuItem = menu.findItem(R.id.action_share);
+
+        //Get the provider and hold onto it to set/change the share intent.
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+
+        if(mYTUri != null) {
+            mShareActionProvider.setShareIntent(createShareIntent());
+        }
+    }
+
+    private Intent createShareIntent() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, mYTUri + " #PopularMovies_KT");
+        return shareIntent;
     }
 
     @Override
@@ -128,6 +158,7 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
             if(movieID != null) {
                 new FetchMovieTrailers(this).execute(movieID);
                 new FetchMovieReviews(this).execute(movieID);
+
             }
 
         }
@@ -180,6 +211,7 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
                 movieTrailerRow.setBackgroundResource(R.drawable.trailer_selector);
                 trailer_container.addView(movieTrailerRow);
 
+                setShareYTUri(video_key, count);
                 count++;
             }
         } else {
@@ -210,17 +242,25 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
         }
     }
 
+    public void setShareYTUri(String video_key, int count) {
+        if(count == 0) {
+            mYTUri = "https://www.youtube.com/watch?v=" + video_key;
+        }
+    }
+
     public void launchYoutubeIntent(String video_key) {
         if(video_key != null) {
             Intent intent;
             if(checkAppInstalled("com.google.android.youtube")) {
                 intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube://" + video_key));
+
             } else {
                 Uri browser_YT = Uri.parse("https://www.youtube.com/watch")
                         .buildUpon()
                         .appendQueryParameter("v",video_key)
                         .build();
                 intent = new Intent(Intent.ACTION_VIEW, browser_YT);
+
             }
             startActivity(intent);
         }
