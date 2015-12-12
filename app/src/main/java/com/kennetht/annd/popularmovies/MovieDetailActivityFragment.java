@@ -144,6 +144,8 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
                 }
             }
         }
+
+        cursor.close();
         return false;
     }
 

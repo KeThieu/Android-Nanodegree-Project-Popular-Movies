@@ -170,6 +170,7 @@ public class Grid_Fragment extends Fragment implements FetchMovieData.callbackMo
                 globalMovies.add(movieObject);
             } while (cursor.moveToNext());
         }
+        cursor.close();
     }
 
     @Override
