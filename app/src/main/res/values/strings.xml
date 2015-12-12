@@ -14,13 +14,16 @@
     <string name="sortByTitle" translatable="false">Sort By</string>
     <string name="popularity_desc" translatable="false">popularity_desc</string>
     <string name="vote_avg_desc" translatable="false">vote_average_desc</string>
+    <string name="favorites" translatable="false">favorites</string>
     <string-array name="Sort_Types">
         <item>Popularity Descending</item>
         <item>User Rating Descending</item>
+        <item>Your Favorites</item>
     </string-array>
     <string-array name="Sort_Values">
         <item>@string/popularity_desc</item>
         <item>@string/vote_avg_desc</item>
+        <item>@string/favorites</item>
     </string-array>
 
 

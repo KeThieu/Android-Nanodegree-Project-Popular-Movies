@@ -1,14 +1,13 @@
 package com.kennetht.annd.popularmovies;
 
-import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
+import com.kennetht.annd.popularmovies.MovieContainers.MovieObject;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -38,6 +37,7 @@ public class MovieAdapter extends ArrayAdapter<MovieObject> {
 
         if(convertView == null) {
             view = new ImageView(this.context);
+            view.setAdjustViewBounds(true);
         } else {
             view = (ImageView) convertView;
         }
@@ -46,9 +46,6 @@ public class MovieAdapter extends ArrayAdapter<MovieObject> {
                 .buildUpon()
                 .appendEncodedPath(posterPath)
                 .build();
-
-        String test = uri.toString();
-        //Log.v(LOG_TAG, "Image URL = " + test);
 
         view.setAdjustViewBounds(true);
         Picasso.with(this.context).load(uri.toString()).into(view);

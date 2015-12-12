@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/trailer_none"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-condensed"
+        android:textColor="@color/Text_Color_Black"
+        android:text="Sorry, but no trailers were found in the database for this movie."
+        android:textSize="20sp"
+        android:layout_weight="1"
+        android:padding="16dp"/>
+
+</LinearLayout>

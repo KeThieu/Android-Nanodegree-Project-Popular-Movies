@@ -1,9 +1,7 @@
-package com.kennetht.annd.popularmovies;
+package com.kennetht.annd.popularmovies.MovieContainers;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import java.util.ArrayList;
 
 public class MovieObject implements Parcelable {
     //This MovieObject is designed to hold the extra data

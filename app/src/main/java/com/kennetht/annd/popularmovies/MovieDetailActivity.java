@@ -2,6 +2,7 @@ package com.kennetht.annd.popularmovies;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,14 +15,33 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.kennetht.annd.popularmovies.MovieContainers.MovieObject;
+import com.kennetht.annd.popularmovies.MovieContainers.MovieTrailers;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+
 public class MovieDetailActivity extends AppCompatActivity {
+
+    private ArrayList<MovieTrailers> gTrailers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
+
+        gTrailers = new ArrayList<MovieTrailers>();
         if(savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new MovieDetailActivityFragment())
@@ -47,39 +67,6 @@ public class MovieDetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static class MovieDetailActivityFragment extends Fragment {
 
-        private final String LOG_TAG = MovieDetailActivityFragment.class.getSimpleName();
 
-        public MovieDetailActivityFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
-            Intent receivedIntent =getActivity().getIntent();
-            if (receivedIntent != null && receivedIntent.hasExtra("MovieObject")) {
-                MovieObject receivedMovie = receivedIntent.getExtras().getParcelable("MovieObject");
-                Log.v(LOG_TAG, "Movie Title: " + receivedMovie.getTitle());
-
-                //Reuse the same URI code for the poster path as MovieAdapter
-                String posterPath = receivedMovie.getPoster();
-                final String baseURL = "http://image.tmdb.org/t/p/w185";
-
-                Uri uri = Uri.parse(baseURL)
-                        .buildUpon()
-                        .appendEncodedPath(posterPath)
-                        .build();
-
-                //Setting everything within the xml file
-                ((TextView) rootView.findViewById(R.id.detail_movieTitle)).setText(receivedMovie.getTitle());
-                Picasso.with(getActivity()).load(uri).into((ImageView)rootView.findViewById(R.id.detail_moviePoster));
-                ((TextView) rootView.findViewById(R.id.detail_overview)).setText("Overview: " + receivedMovie.getOverview());
-                ((TextView) rootView.findViewById(R.id.detail_rating)).setText("Rating: " + (receivedMovie.getRating()).toString());
-                ((TextView) rootView.findViewById(R.id.detail_releaseDate)).setText("Release Date: " + receivedMovie.getRelease());
-            }
-            return rootView;
-        }
-    }
 }

@@ -6,6 +6,7 @@ import net.simonvt.schematic.annotation.NotNull;
 import net.simonvt.schematic.annotation.PrimaryKey;
 import net.simonvt.schematic.annotation.Unique;
 
+
 /**
  * Created by Kenneth on 12/2/2015.
  */
@@ -15,10 +16,10 @@ public interface FavoritesColumns {
     @AutoIncrement
     public static final String _ID = "_id";
 
-    @DataType(DataType.Type.TEXT) @NotNull
+    @DataType(DataType.Type.TEXT) @NotNull @Unique
     public static final String MOVIE_ID = "movie_id";
 
-    @DataType(DataType.Type.TEXT) @NotNull @Unique
+    @DataType(DataType.Type.TEXT) @NotNull
     public static final String MOVIE_TITLE = "movie_title";
 
     @DataType(DataType.Type.TEXT) @NotNull

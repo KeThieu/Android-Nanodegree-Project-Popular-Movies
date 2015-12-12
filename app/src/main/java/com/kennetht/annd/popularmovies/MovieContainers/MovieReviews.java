@@ -1,4 +1,4 @@
-package com.kennetht.annd.popularmovies;
+package com.kennetht.annd.popularmovies.MovieContainers;
 
 import android.os.Parcel;
 import android.os.Parcelable;

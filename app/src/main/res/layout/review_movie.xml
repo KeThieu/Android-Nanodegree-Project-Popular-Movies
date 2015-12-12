@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView android:id="@+id/review_author_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:text="Dummy Authur Name"
+        android:fontFamily="sans-serif-condensed"
+        android:textColor="@color/Text_Color_Black"
+        android:textSize="18sp"></TextView>
+
+    <TextView android:id="@+id/review_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:text="This is a dummy review content. This movie sucks!"
+        android:fontFamily="sans-serif-condensed"
+        android:textColor="@color/Text_Color_Black"
+        android:textSize="14sp"></TextView>
+
+    <!-- Just a line divider -->
+    <View android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/Text_Color_Black"
+        android:paddingLeft="16dp"
+        android:paddingTop="5dp"
+        android:paddingRight="16dp"></View>
+
+</LinearLayout>
