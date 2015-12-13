@@ -194,7 +194,12 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
         if(mT.size() > 0) {
             int count = 0;
             for (MovieTrailers m : mT) {
+
+                if(layoutContainer == null) return;
+                trailer_container = (ViewGroup) layoutContainer.findViewById(R.id.trailer_container);
+
                 if(count >= 2) break; //limit the number of trailers to up to 2
+
                 final String video_key = m.getVideoKey();
                 String video_name = m.getVideoName();
 
@@ -207,7 +212,7 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
                 });
 
                 ((TextView) movieTrailerRow.findViewById(R.id.trailer_movie_name)).setText(video_name);
-                trailer_container = (ViewGroup) layoutContainer.findViewById(R.id.trailer_container);
+
                 movieTrailerRow.setBackgroundResource(R.drawable.trailer_selector);
                 trailer_container.addView(movieTrailerRow);
 
@@ -274,7 +279,11 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
         if(mR.size() > 0) {
             int count = 0;
             for (MovieReviews m : mR) {
+                if(layoutContainer == null) return;
+                review_container = (ViewGroup) layoutContainer.findViewById(R.id.review_container);
+
                 if(count >= 2) break; //limit the number the reviews to up to 2
+
                 final String author_name = m.getReviewAuthor();
                 String review_contents = m.getReviewContents();
 
@@ -282,7 +291,6 @@ public class MovieDetailActivityFragment extends Fragment implements FetchMovieT
 
                 ((TextView) movieReviewRow.findViewById(R.id.review_author_name)).setText("Reviewer Name : " + author_name);
                 ((TextView) movieReviewRow.findViewById(R.id.review_content)).setText(" " + review_contents);
-                review_container = (ViewGroup) layoutContainer.findViewById(R.id.review_container);
                 review_container.addView(movieReviewRow);
 
                 count++;

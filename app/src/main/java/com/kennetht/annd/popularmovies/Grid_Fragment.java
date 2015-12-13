@@ -115,11 +115,7 @@ public class Grid_Fragment extends Fragment implements FetchMovieData.callbackMo
                 public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                     mPosition = position;
                     MovieObject movieObject = (MovieObject) adapterView.getItemAtPosition(position);
-                    /*
-                    Intent intent = new Intent(getActivity(), MovieDetailActivity.class);
-                    intent.putExtra("MovieObject", movieObject);
-                    startActivity(intent);
-                    */
+
                     try {
                         mCallback = (CallbackMain) getActivity();
                     } catch (ClassCastException e) {
